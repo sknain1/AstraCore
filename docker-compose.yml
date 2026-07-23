@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+
+  broker-go:
+    container_name: astracore-broker-go
+    build:
+      context: ./broker-go
+    restart: unless-stopped
+    volumes:
+      - ./configs:/app/configs
+      - ~/.astracore:/root/.astracore
+    networks:
+      - astracore-net
+
+
+  engine-rust:
+    container_name: astracore-engine-rust
+    build:
+      context: ./engine-rust
+    restart: unless-stopped
+    depends_on:
+      - broker-go
+    volumes:
+      - ./configs:/app/configs
+    networks:
+      - astracore-net
+
+
+networks:
+  astracore-net:
+    driver: bridge
