@@ -1,0 +1,53 @@
+# ===============================
+# AstraCore
+# ===============================
+
+# Environment
+.env
+.env.*
+
+# Runtime
+logs/
+*.log
+
+# Local runtime
+.astracore/
+*.db
+
+# Go
+broker-go/bin/
+*.exe
+*.test
+*.out
+coverage.out
+
+# Rust
+engine-rust/target/
+**/*.rs.bk
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# Tokens & Secrets
+token.json
+tokens/
+access_token.json
+refresh_token.json
+
+# Build
+dist/
+build/
+
+# Cache
+.cache/
