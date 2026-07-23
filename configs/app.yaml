@@ -1,0 +1,14 @@
+app:
+  name: AstraCore
+  version: "0.1.0"
+  env: development
+
+server:
+  host: 127.0.0.1
+  port: 8080
+
+broker:
+  name: fyers
+
+logging:
+  level: info
