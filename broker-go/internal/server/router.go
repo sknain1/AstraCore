@@ -2,8 +2,13 @@ package server
 
 import "net/http"
 
-func RegisterRoutes() {
-	http.HandleFunc("/health", HealthHandler)
-	http.HandleFunc("/version", VersionHandler)
-	http.HandleFunc("/ping", PingHandler)
+func RegisterRoutes() http.Handler {
+
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/health", HealthHandler)
+	mux.HandleFunc("/version", VersionHandler)
+	mux.HandleFunc("/ping", PingHandler)
+
+	return LoggingMiddleware(mux)
 }
