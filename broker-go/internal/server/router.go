@@ -10,5 +10,8 @@ func RegisterRoutes() http.Handler {
 	mux.HandleFunc("/version", VersionHandler)
 	mux.HandleFunc("/ping", PingHandler)
 
-	return LoggingMiddleware(mux)
+	handler := LoggingMiddleware(mux)
+	handler = RecoveryMiddleware(handler)
+
+	return handler
 }
