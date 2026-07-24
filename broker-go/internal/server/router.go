@@ -22,6 +22,7 @@ func RegisterRoutes() http.Handler {
 	// Profile API
 	mux.HandleFunc("/profile", auth.ProfileHandler)
         mux.HandleFunc("/funds", auth.FundsHandler)
+        mux.HandleFunc("/holdings", auth.HoldingsHandler)
 	// Middlewares
 	handler := LoggingMiddleware(mux)
 	handler = RecoveryMiddleware(handler)
