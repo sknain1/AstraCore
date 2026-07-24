@@ -6,11 +6,17 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/joho/godotenv"
+
 	"github.com/sknain/astracore/broker-go/internal/config"
 	"github.com/sknain/astracore/broker-go/internal/server"
 )
 
 func main() {
+
+	if err := godotenv.Load("../.env"); err != nil {
+		log.Println("Warning: .env file not found")
+	}
 
 	cfg, err := config.Load("../configs/app.yaml")
 	if err != nil {
