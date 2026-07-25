@@ -24,6 +24,9 @@ func RegisterRoutes() http.Handler {
         mux.HandleFunc("/funds", auth.FundsHandler)
         mux.HandleFunc("/holdings", auth.HoldingsHandler)
         mux.HandleFunc("/positions", auth.PositionsHandler)
+        mux.HandleFunc("/orders", auth.OrdersHandler)
+        // Trading APIs
+        mux.HandleFunc("/orders/place", auth.PlaceOrderHandler)
 	// Middlewares
 	handler := LoggingMiddleware(mux)
 	handler = RecoveryMiddleware(handler)

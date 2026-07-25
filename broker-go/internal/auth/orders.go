@@ -1,11 +1,11 @@
 package auth
 
-func GetPositions() ([]byte, error) {
+func GetOrders() ([]byte, error) {
 
 	client, err := NewFyersClient()
 	if err != nil {
 		return nil, err
 	}
 
-	return client.Get("positions")
+	return client.Get("orders")
 }
