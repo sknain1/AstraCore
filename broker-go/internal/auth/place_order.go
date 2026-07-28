@@ -1,6 +1,9 @@
 package auth
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 func PlaceOrder(order PlaceOrderRequest) ([]byte, error) {
 
@@ -9,10 +12,20 @@ func PlaceOrder(order PlaceOrderRequest) ([]byte, error) {
 		return nil, err
 	}
 
-	payload, err := json.Marshal(order)
+	payload, err := json.MarshalIndent(order, "", "  ")
 	if err != nil {
 		return nil, err
 	}
 
-	return client.Post("orders", payload)
+	fmt.Println("===================================")
+	fmt.Println("FYERS ORDER REQUEST")
+	fmt.Println(string(payload))
+	fmt.Println("===================================")
+
+	resp, err := client.Post("orders/sync", payload)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }

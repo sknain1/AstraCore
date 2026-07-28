@@ -21,9 +21,15 @@ func NewClient(appID, accessToken string) *Client {
 
 func (c *Client) Get(endpoint string) ([]byte, error) {
 
+	url := "https://api-t1.fyers.in/api/v3/" + endpoint
+
+	if len(endpoint) >= 4 && endpoint[:4] == "data" {
+		url = "https://api-t1.fyers.in/" + endpoint
+	}
+
 	req, err := http.NewRequest(
 		http.MethodGet,
-		"https://api-t1.fyers.in/api/v3/"+endpoint,
+		url,
 		nil,
 	)
 	if err != nil {
@@ -73,6 +79,12 @@ func (c *Client) Post(endpoint string, payload []byte) ([]byte, error) {
 
 	req.Header.Set("Content-Type", "application/json")
 
+	fmt.Println("===================================")
+	fmt.Println("POST URL:", req.URL.String())
+	fmt.Println("Authorization:", req.Header.Get("Authorization"))
+	fmt.Println("Content-Type:", req.Header.Get("Content-Type"))
+	fmt.Println("===================================")
+
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
@@ -80,6 +92,10 @@ func (c *Client) Post(endpoint string, payload []byte) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	fmt.Println("STATUS =", resp.Status)
+	fmt.Println("SERVER =", resp.Header.Get("Server"))
+	fmt.Println("CF-RAY =", resp.Header.Get("CF-Ray"))
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

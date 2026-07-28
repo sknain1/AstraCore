@@ -25,6 +25,9 @@ func RegisterRoutes() http.Handler {
         mux.HandleFunc("/holdings", auth.HoldingsHandler)
         mux.HandleFunc("/positions", auth.PositionsHandler)
         mux.HandleFunc("/orders", auth.OrdersHandler)
+        mux.HandleFunc("/ltp", auth.LTPHandler)
+        mux.HandleFunc("/history", auth.HistoryHandler)
+        mux.HandleFunc("/ws/start", auth.WebSocketHandler)
         // Trading APIs
         mux.HandleFunc("/orders/place", auth.PlaceOrderHandler)
 	// Middlewares
