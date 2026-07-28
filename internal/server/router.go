@@ -1,0 +1,38 @@
+package server
+
+import (
+	"net/http"
+
+	"github.com/sknain/astracore/broker-go/internal/auth"
+)
+
+func RegisterRoutes() http.Handler {
+
+	mux := http.NewServeMux()
+
+	// Health APIs
+	mux.HandleFunc("/health", HealthHandler)
+	mux.HandleFunc("/version", VersionHandler)
+	mux.HandleFunc("/ping", PingHandler)
+
+	// Authentication APIs
+	mux.HandleFunc("/auth/login", auth.LoginHandler)
+	mux.HandleFunc("/auth/callback", auth.CallbackHandler)
+
+	// Account APIs
+        mux.HandleFunc("/profile", auth.ProfileHandler)
+        mux.HandleFunc("/funds", auth.FundsHandler)
+        mux.HandleFunc("/holdings", auth.HoldingsHandler)
+        mux.HandleFunc("/positions", auth.PositionsHandler)
+        mux.HandleFunc("/orders", auth.OrdersHandler)
+        mux.HandleFunc("/ltp", auth.LTPHandler)
+        mux.HandleFunc("/history", auth.HistoryHandler)
+        mux.HandleFunc("/ws/start", auth.WebSocketHandler)
+        // Trading APIs
+        mux.HandleFunc("/orders/place", auth.PlaceOrderHandler)
+	// Middlewares
+	handler := LoggingMiddleware(mux)
+	handler = RecoveryMiddleware(handler)
+
+	return handler
+}
