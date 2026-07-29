@@ -1,10 +1,14 @@
 package order
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/sknain/astracore/broker-go/internal/auth"
+	"github.com/sknain/astracore/broker-go/internal/fyers"
 )
 
 type Service struct{}
@@ -15,8 +19,43 @@ func NewService() *Service {
 
 func (s *Service) Place(symbol string, side Side, qty int, price float64) (Order, error) {
 
+	client, err := auth.NewFyersClient()
+	if err != nil {
+		return Order{}, err
+	}
+
+	fyersSide := 1
+	if side == Sell {
+		fyersSide = -1
+	}
+
+	resp, err := client.PlaceOrder(fyers.PlaceOrderRequest{
+		Symbol:       symbol,
+		Qty:          qty,
+		Type:         1, // Limit Order
+		Side:         fyersSide,
+		ProductType:  "INTRADAY",
+		LimitPrice:   price,
+		StopPrice:    0,
+		DisclosedQty: 0,
+		Validity:     "DAY",
+		OfflineOrder: false,
+	})
+	if err != nil {
+		return Order{}, err
+	}
+
+	var brokerResp map[string]any
+	_ = json.Unmarshal(resp, &brokerResp)
+
+	brokerID := ""
+	if id, ok := brokerResp["id"].(string); ok {
+		brokerID = id
+	}
+
 	order := Order{
 		ID:        uuid.New().String(),
+		BrokerID:  brokerID,
 		Symbol:    symbol,
 		Side:      side,
 		Qty:       qty,
