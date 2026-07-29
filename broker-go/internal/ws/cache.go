@@ -7,36 +7,41 @@ type TickCache struct {
 	ticks map[string]Tick
 }
 
-func NewTickCache() *TickCache {
-	return &TickCache{
-		ticks: make(map[string]Tick),
-	}
+var cache = &TickCache{
+	ticks: make(map[string]Tick),
 }
 
-func (c *TickCache) Set(t Tick) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+func UpdateTick(tick Tick) {
+	cache.mu.Lock()
+	defer cache.mu.Unlock()
 
-	c.ticks[t.Symbol] = t
+	cache.ticks[tick.Symbol] = tick
 }
 
-func (c *TickCache) Get(symbol string) (Tick, bool) {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+func GetTick(symbol string) (Tick, bool) {
+	cache.mu.RLock()
+	defer cache.mu.RUnlock()
 
-	t, ok := c.ticks[symbol]
-	return t, ok
+	tick, ok := cache.ticks[symbol]
+	return tick, ok
 }
 
-func (c *TickCache) GetAll() []Tick {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+func GetAllTicks() []Tick {
+	cache.mu.RLock()
+	defer cache.mu.RUnlock()
 
-	out := make([]Tick, 0, len(c.ticks))
+	result := make([]Tick, 0, len(cache.ticks))
 
-	for _, t := range c.ticks {
-		out = append(out, t)
+	for _, tick := range cache.ticks {
+		result = append(result, tick)
 	}
 
-	return out
+	return result
+}
+
+func ClearTicks() {
+	cache.mu.Lock()
+	defer cache.mu.Unlock()
+
+	cache.ticks = make(map[string]Tick)
 }
