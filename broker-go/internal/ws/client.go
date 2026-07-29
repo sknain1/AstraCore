@@ -6,6 +6,8 @@ import (
 	"time"
 
 	fyersws "github.com/FyersDev/fyers-go-sdk/websocket"
+
+	"github.com/sknain/astracore/broker-go/internal/event"
 )
 
 type Client struct {
@@ -70,27 +72,26 @@ func (c *Client) Connect() error {
 				return
 			}
 
-			var ltp float64
-
-			switch v := msg["ltp"].(type) {
-			case float64:
-				ltp = v
-			case fyersws.FloatSDK:
-				ltp = float64(v)
-			default:
-				fmt.Printf("Unsupported LTP type: %T\n", v)
+			ltpValue, ok := msg["ltp"].(fyersws.FloatSDK)
+			if !ok {
 				return
 			}
 
 			tick := Tick{
 				Symbol:    symbol,
-				LTP:       ltp,
+				LTP:       float64(ltpValue),
 				Timestamp: time.Now(),
 			}
 
-			UpdateTick(tick)
+			// Tick Cache Update
 
-			fmt.Println("CACHE UPDATED:", tick.Symbol, tick.LTP)
+			// Event Publish
+			event.GetBus().Publish(event.Event{
+				Type:      event.TickEvent,
+				Timestamp: tick.Timestamp,
+				Data:      tick,
+			})
+
 		},
 	)
 
