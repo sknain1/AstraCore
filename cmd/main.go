@@ -1,15 +1,18 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
-	"time"
+    "fmt"
+    "log"
+    "net/http"
+    "os"
+    "time"
 
-	"github.com/joho/godotenv"
+    "github.com/joho/godotenv"
 
-	"github.com/sknain/astracore/broker-go/internal/config"
-	"github.com/sknain/astracore/broker-go/internal/server"
+    "github.com/sknain/astracore/broker-go/internal/auth"
+    "github.com/sknain/astracore/broker-go/internal/config"
+    "github.com/sknain/astracore/broker-go/internal/server"
+    "github.com/sknain/astracore/broker-go/internal/ws"
 )
 
 func main() {
@@ -21,6 +24,19 @@ func main() {
 	cfg, err := config.Load("../configs/app.yaml")
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// Initialize WebSocket Client
+	token, err := auth.LoadToken()
+	if err != nil {
+		log.Printf("WebSocket disabled: %v", err)
+	} else {
+                client := ws.NewClient(
+                os.Getenv("FYERS_APP_ID"),
+                token.AccessToken,
+         )
+		ws.GetManager().SetClient(client)
+		log.Println("WebSocket client initialized")
 	}
 
 	handler := server.RegisterRoutes()
