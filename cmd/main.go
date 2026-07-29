@@ -10,7 +10,9 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/sknain/astracore/broker-go/internal/auth"
+	"github.com/sknain/astracore/broker-go/internal/broker"
 	"github.com/sknain/astracore/broker-go/internal/config"
+	"github.com/sknain/astracore/broker-go/internal/fyers"
 	"github.com/sknain/astracore/broker-go/internal/server"
 	"github.com/sknain/astracore/broker-go/internal/ws"
 )
@@ -25,24 +27,51 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Register Event Subscribers
 	ws.RegisterSubscribers()
 
-	// Initialize WebSocket Client
+	// Load Token Once
 	token, err := auth.LoadToken()
 	if err != nil {
-		log.Printf("WebSocket disabled: %v", err)
+
+		log.Printf("Broker/WebSocket disabled: %v", err)
+
 	} else {
-		client := ws.NewClient(
+
+		// -----------------------------
+		// Register FYERS Broker
+		// -----------------------------
+		fyersClient := fyers.NewClient(
 			os.Getenv("FYERS_APP_ID"),
 			token.AccessToken,
 		)
-		ws.GetManager().SetClient(client)
+
+		adapter := fyers.NewAdapter(fyersClient)
+
+		broker.Register(adapter)
+
+		log.Println("FYERS broker registered")
+
+		// -----------------------------
+		// Initialize WebSocket
+		// -----------------------------
+		wsClient := ws.NewClient(
+			os.Getenv("FYERS_APP_ID"),
+			token.AccessToken,
+		)
+
+		ws.GetManager().SetClient(wsClient)
+
 		log.Println("WebSocket client initialized")
 	}
 
 	handler := server.RegisterRoutes()
 
-	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
+	addr := fmt.Sprintf("%s:%d",
+		cfg.Server.Host,
+		cfg.Server.Port,
+	)
 
 	log.Printf("%s v%s (%s) started on %s",
 		cfg.App.Name,
