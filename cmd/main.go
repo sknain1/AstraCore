@@ -7,31 +7,42 @@ import (
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
-
 	"github.com/sknain/astracore/broker-go/internal/auth"
 	"github.com/sknain/astracore/broker-go/internal/broker"
 	"github.com/sknain/astracore/broker-go/internal/config"
 	"github.com/sknain/astracore/broker-go/internal/fyers"
+	"github.com/sknain/astracore/broker-go/internal/instruments"
+	"github.com/sknain/astracore/broker-go/internal/market"
+	"github.com/sknain/astracore/broker-go/internal/paper"
 	"github.com/sknain/astracore/broker-go/internal/server"
 	"github.com/sknain/astracore/broker-go/internal/ws"
 )
 
 func main() {
 
-	if err := godotenv.Load("../.env"); err != nil {
-		log.Println("Warning: .env file not found")
+	// Load .env
+	if err := config.LoadEnv(); err != nil {
+		log.Println(err)
 	}
 
+	// Load Config
 	cfg, err := config.Load("../configs/app.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Load Instruments
+	if err := instruments.Load(); err != nil {
+		log.Println(err)
+	} else {
+		log.Printf("Loaded %d instruments", len(instruments.All()))
+	}
+
 	// Register Event Subscribers
 	ws.RegisterSubscribers()
+	market.RegisterSubscribers()
 
-	// Load Token Once
+	// Load Token
 	token, err := auth.LoadToken()
 	if err != nil {
 
@@ -47,11 +58,28 @@ func main() {
 			token.AccessToken,
 		)
 
-		adapter := fyers.NewAdapter(fyersClient)
+		fyersAdapter := fyers.NewAdapter(fyersClient)
+		broker.Register("fyers", fyersAdapter)
 
-		broker.Register(adapter)
+		// -----------------------------
+		// Register Paper Broker
+		// -----------------------------
+		paperAdapter := paper.NewAdapter()
+		broker.Register("paper", paperAdapter)
 
-		log.Println("FYERS broker registered")
+		// -----------------------------
+		// Select Active Broker
+		// -----------------------------
+		brokerName := os.Getenv("BROKER")
+		if brokerName == "" {
+			brokerName = "paper"
+		}
+
+		if err := broker.Use(brokerName); err != nil {
+			log.Fatal(err)
+		}
+
+		log.Printf("Active Broker: %s", brokerName)
 
 		// -----------------------------
 		// Initialize WebSocket
@@ -68,12 +96,14 @@ func main() {
 
 	handler := server.RegisterRoutes()
 
-	addr := fmt.Sprintf("%s:%d",
+	addr := fmt.Sprintf(
+		"%s:%d",
 		cfg.Server.Host,
 		cfg.Server.Port,
 	)
 
-	log.Printf("%s v%s (%s) started on %s",
+	log.Printf(
+		"%s v%s (%s) started on %s",
 		cfg.App.Name,
 		cfg.App.Version,
 		cfg.App.Env,

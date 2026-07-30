@@ -43,7 +43,7 @@ func (c *Client) Connect() error {
 	c.socket = fyersws.NewFyersDataSocket(
 		accessToken,
 		"",
-		true,
+		false, // Full Market Feed (Lite Mode OFF)
 		false,
 		true,
 		5,
@@ -83,18 +83,13 @@ func (c *Client) Connect() error {
 				Timestamp: time.Now(),
 			}
 
-			// Tick Cache Update
-
-			// Event Publish
 			event.GetBus().Publish(event.Event{
 				Type:      event.TickEvent,
 				Timestamp: tick.Timestamp,
 				Data:      tick,
 			})
-
 		},
 	)
-
 	if c.socket == nil {
 		return fmt.Errorf("failed to create websocket client")
 	}

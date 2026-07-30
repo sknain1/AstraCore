@@ -78,6 +78,21 @@ func (s *Service) Modify(id string, qty int, price float64) (Order, error) {
 		return Order{}, fmt.Errorf("order not found")
 	}
 
+	client, err := auth.NewFyersClient()
+	if err != nil {
+		return Order{}, err
+	}
+
+	_, err = client.ModifyOrder(fyers.ModifyOrderRequest{
+		ID:         order.BrokerID,
+		Qty:        qty,
+		LimitPrice: price,
+		Type:       1,
+	})
+	if err != nil {
+		return Order{}, err
+	}
+
 	order.Qty = qty
 	order.Price = price
 	order.UpdatedAt = time.Now()
@@ -93,6 +108,16 @@ func (s *Service) Cancel(id string) (Order, error) {
 	order, ok := GetOrder(id)
 	if !ok {
 		return Order{}, fmt.Errorf("order not found")
+	}
+
+	client, err := auth.NewFyersClient()
+	if err != nil {
+		return Order{}, err
+	}
+
+	_, err = client.CancelOrder(order.BrokerID)
+	if err != nil {
+		return Order{}, err
 	}
 
 	order.Status = StatusCancelled
