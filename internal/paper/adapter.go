@@ -17,13 +17,13 @@ func NewAdapter() *Adapter {
 	}
 }
 
-func (a *Adapter) PlaceOrder(order broker.Order) (string, error) {
+func (a *Adapter) PlaceOrder(req broker.PlaceOrderRequest) (string, error) {
 
 	o, err := a.engine.PlaceOrder(
-		order.Symbol,
-		Side(order.Side),
-		order.Qty,
-		order.Price,
+		req.Symbol,
+		Side(req.Side),
+		req.Qty,
+		req.Price,
 	)
 
 	if err != nil {
