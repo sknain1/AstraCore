@@ -47,3 +47,38 @@ func (b *Broker) Orders() []Order {
 
 	return orders
 }
+
+func (b *Broker) ModifyOrder(id string, qty int, price float64) error {
+
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	order, ok := b.orders[id]
+	if !ok {
+		return fmt.Errorf("order not found")
+	}
+
+	order.Qty = qty
+	order.Price = price
+
+	b.orders[id] = order
+
+	return nil
+}
+
+func (b *Broker) CancelOrder(id string) error {
+
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
+	order, ok := b.orders[id]
+	if !ok {
+		return fmt.Errorf("order not found")
+	}
+
+	order.Status = OrderCancelled
+
+	b.orders[id] = order
+
+	return nil
+}

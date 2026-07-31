@@ -35,12 +35,14 @@ func (a *Adapter) PlaceOrder(req broker.PlaceOrderRequest) (string, error) {
 
 func (a *Adapter) ModifyOrder(orderID string, qty int, price float64) error {
 
-	return fmt.Errorf("paper broker: modify order not implemented")
+	return a.engine.ModifyOrder(orderID, qty, price)
+
 }
 
 func (a *Adapter) CancelOrder(orderID string) error {
 
-	return fmt.Errorf("paper broker: cancel order not implemented")
+	return a.engine.CancelOrder(orderID)
+
 }
 
 func (a *Adapter) GetOrder(orderID string) ([]byte, error) {
