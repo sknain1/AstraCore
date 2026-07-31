@@ -54,6 +54,7 @@ func (s *Service) Place(symbol string, side Side, qty int, price float64) (Order
 
 	return order, nil
 }
+
 func (s *Service) Modify(id string, qty int, price float64) (Order, error) {
 
 	order, ok := GetOrder(id)
