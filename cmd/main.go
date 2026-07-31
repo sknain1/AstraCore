@@ -15,6 +15,7 @@ import (
 	"github.com/sknain/astracore/broker-go/internal/market"
 	"github.com/sknain/astracore/broker-go/internal/paper"
 	"github.com/sknain/astracore/broker-go/internal/server"
+	"github.com/sknain/astracore/broker-go/internal/workers"
 	"github.com/sknain/astracore/broker-go/internal/ws"
 )
 
@@ -41,6 +42,8 @@ func main() {
 	// Register Event Subscribers
 	ws.RegisterSubscribers()
 	market.RegisterSubscribers()
+
+	workers.RegisterPortfolioWorker()
 
 	// Load Token
 	token, err := auth.LoadToken()
