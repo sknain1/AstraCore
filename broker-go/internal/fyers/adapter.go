@@ -16,20 +16,20 @@ func NewAdapter(client *Client) *Adapter {
 	}
 }
 
-func (a *Adapter) PlaceOrder(order broker.Order) (string, error) {
+func (a *Adapter) PlaceOrder(req broker.PlaceOrderRequest) (string, error) {
 
 	side := 1
-	if order.Side == broker.Sell {
+	if req.Side == broker.Sell {
 		side = -1
 	}
 
 	resp, err := a.client.PlaceOrder(PlaceOrderRequest{
-		Symbol:       order.Symbol,
-		Qty:          order.Qty,
+		Symbol:       req.Symbol,
+		Qty:          req.Qty,
 		Type:         1,
 		Side:         side,
 		ProductType:  "INTRADAY",
-		LimitPrice:   order.Price,
+		LimitPrice:   req.Price,
 		StopPrice:    0,
 		DisclosedQty: 0,
 		Validity:     "DAY",

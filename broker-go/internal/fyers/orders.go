@@ -10,11 +10,13 @@ type PlaceOrderRequest struct {
 	ProductType  string  `json:"productType"`
 	LimitPrice   float64 `json:"limitPrice"`
 	StopPrice    float64 `json:"stopPrice"`
-	DisclosedQty int     `json:"disclosedQty"`
 	Validity     string  `json:"validity"`
+	DisclosedQty int     `json:"disclosedQty"`
 	OfflineOrder bool    `json:"offlineOrder"`
 	StopLoss     float64 `json:"stopLoss"`
 	TakeProfit   float64 `json:"takeProfit"`
+	OrderTag     string  `json:"orderTag,omitempty"`
+	IsSliceOrder bool    `json:"isSliceOrder,omitempty"`
 }
 
 func (c *Client) PlaceOrder(req PlaceOrderRequest) ([]byte, error) {
@@ -24,7 +26,7 @@ func (c *Client) PlaceOrder(req PlaceOrderRequest) ([]byte, error) {
 		return nil, err
 	}
 
-	return c.Post("orders", payload)
+	return c.Post("orders/sync", payload)
 }
 
 type ModifyOrderRequest struct {
@@ -42,7 +44,7 @@ func (c *Client) ModifyOrder(req ModifyOrderRequest) ([]byte, error) {
 		return nil, err
 	}
 
-	return c.Post("orders/modify", payload)
+	return c.Patch("orders/sync", payload)
 }
 
 type CancelOrderRequest struct {
@@ -60,7 +62,7 @@ func (c *Client) CancelOrder(id string) ([]byte, error) {
 		return nil, err
 	}
 
-	return c.Post("orders/cancel", payload)
+	return c.Delete("orders/sync", payload)
 }
 
 func (c *Client) OrderStatus(id string) ([]byte, error) {

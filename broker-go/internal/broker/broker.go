@@ -7,7 +7,7 @@ const (
 	Sell Side = "SELL"
 )
 
-type Order struct {
+type PlaceOrderRequest struct {
 	Symbol string
 	Side   Side
 	Qty    int
@@ -15,7 +15,7 @@ type Order struct {
 }
 
 type Broker interface {
-	PlaceOrder(order Order) (string, error)
+	PlaceOrder(req PlaceOrderRequest) (string, error)
 	ModifyOrder(orderID string, qty int, price float64) error
 	CancelOrder(orderID string) error
 	GetOrder(orderID string) ([]byte, error)

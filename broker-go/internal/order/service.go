@@ -1,14 +1,12 @@
 package order
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 
-	"github.com/sknain/astracore/broker-go/internal/auth"
-	"github.com/sknain/astracore/broker-go/internal/fyers"
+	"github.com/sknain/astracore/broker-go/internal/broker"
 )
 
 type Service struct{}
@@ -19,38 +17,24 @@ func NewService() *Service {
 
 func (s *Service) Place(symbol string, side Side, qty int, price float64) (Order, error) {
 
-	client, err := auth.NewFyersClient()
+	b, err := broker.Get()
 	if err != nil {
 		return Order{}, err
 	}
 
-	fyersSide := 1
+	brokerSide := broker.Buy
 	if side == Sell {
-		fyersSide = -1
+		brokerSide = broker.Sell
 	}
 
-	resp, err := client.PlaceOrder(fyers.PlaceOrderRequest{
-		Symbol:       symbol,
-		Qty:          qty,
-		Type:         1, // Limit Order
-		Side:         fyersSide,
-		ProductType:  "INTRADAY",
-		LimitPrice:   price,
-		StopPrice:    0,
-		DisclosedQty: 0,
-		Validity:     "DAY",
-		OfflineOrder: false,
+	brokerID, err := b.PlaceOrder(broker.PlaceOrderRequest{
+		Symbol: symbol,
+		Side:   brokerSide,
+		Qty:    qty,
+		Price:  price,
 	})
 	if err != nil {
 		return Order{}, err
-	}
-
-	var brokerResp map[string]any
-	_ = json.Unmarshal(resp, &brokerResp)
-
-	brokerID := ""
-	if id, ok := brokerResp["id"].(string); ok {
-		brokerID = id
 	}
 
 	order := Order{
@@ -78,6 +62,15 @@ func (s *Service) Modify(id string, qty int, price float64) (Order, error) {
 		return Order{}, fmt.Errorf("order not found")
 	}
 
+	b, err := broker.Get()
+	if err != nil {
+		return Order{}, err
+	}
+
+	if err := b.ModifyOrder(order.BrokerID, qty, price); err != nil {
+		return Order{}, err
+	}
+
 	order.Qty = qty
 	order.Price = price
 	order.UpdatedAt = time.Now()
@@ -93,6 +86,15 @@ func (s *Service) Cancel(id string) (Order, error) {
 	order, ok := GetOrder(id)
 	if !ok {
 		return Order{}, fmt.Errorf("order not found")
+	}
+
+	b, err := broker.Get()
+	if err != nil {
+		return Order{}, err
+	}
+
+	if err := b.CancelOrder(order.BrokerID); err != nil {
+		return Order{}, err
 	}
 
 	order.Status = StatusCancelled
